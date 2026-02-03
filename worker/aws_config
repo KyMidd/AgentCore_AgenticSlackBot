@@ -1,0 +1,22 @@
+# AWS CLI Config for Vera Research Bot
+# This file configures profiles for cross-account access to target AWS accounts
+# Each profile assumes the vera-research-read-only role in the target account
+# Replace the account IDs and role ARNs with your actual values
+
+[profile dev]
+role_arn = arn:aws:iam::111111111111:role/vera-research-read-only
+role_session_name = VeraResearchBot
+region = us-east-1
+credential_source = Environment
+
+[profile staging]
+role_arn = arn:aws:iam::222222222222:role/vera-research-read-only
+role_session_name = VeraResearchBot
+region = us-east-1
+credential_source = Environment
+
+[profile prod]
+role_arn = arn:aws:iam::333333333333:role/vera-research-read-only
+role_session_name = VeraResearchBot
+region = us-east-1
+credential_source = Environment

@@ -1,0 +1,22 @@
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/**
+.terraform.lock.hcl
+**/.vscode/**
+**/__pycache__/**
+# Lambda zip files (built by terraform at runtime)
+receiver/*.zip
+invoker/*.zip
+worker/*.zip
+gateway/*.zip
+.claude/**
+
+# Terraform
+worker/.terraform/*
+tfplan
+
+# Claude
+**/.claude/
+
+# Deploy file
+worker/ue1tiprd_build_and_push.sh
