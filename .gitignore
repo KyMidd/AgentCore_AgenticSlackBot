@@ -20,3 +20,6 @@ tfplan
 
 # Deploy file
 worker/ue1tiprd_build_and_push.sh
+
+# Blog
+blog/**

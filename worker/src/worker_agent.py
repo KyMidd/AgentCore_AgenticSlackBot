@@ -151,17 +151,17 @@ def execute_agent(secrets_json, conversation, memory_config=None):
     # Splunk MCP
     ##
 
-    # try:
-    #     from worker_mcp_client_splunk import build_splunk_mcp_client
+    try:
+        from worker_mcp_client_splunk import build_splunk_mcp_client
 
-    #     # Build Splunk MCP client
-    #     splunk_mcp_client = build_splunk_mcp_client(
-    #         secrets_json["SPLUNK_TOKEN"],
-    #     )
-    #     opened_clients["Splunk"] = splunk_mcp_client
-    #     tools.append(splunk_mcp_client)
-    # except Exception as error:
-    #     print(f"🔴 Error setting up Splunk MCP client: {str(error)}")
+        # Build Splunk MCP client
+        splunk_mcp_client = build_splunk_mcp_client(
+            secrets_json["SPLUNK_TOKEN"],
+        )
+        opened_clients["Splunk"] = splunk_mcp_client
+        tools.append(splunk_mcp_client)
+    except Exception as error:
+        print(f"🔴 Error setting up Splunk MCP client: {str(error)}")
 
     ###
     # Build agent
