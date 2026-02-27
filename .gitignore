@@ -5,6 +5,7 @@ terraform.tfstate.backup
 **/.vscode/**
 **/__pycache__/**
 # Lambda zip files (built by terraform at runtime)
+**/*.zip
 receiver/*.zip
 invoker/*.zip
 worker/*.zip
