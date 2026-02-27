@@ -1,0 +1,606 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Jira Cloud REST API",
+    "description": "Jira Cloud REST API schema for AgentCore Gateway using direct domain with Basic auth",
+    "version": "3.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://YOUR_INSTANCE.atlassian.net"
+    }
+  ],
+  "paths": {
+    "/rest/api/3/search/jql": {
+      "get": {
+        "operationId": "searchIssues",
+        "summary": "Search for issues using JQL",
+        "description": "Search for issues using JQL (Jira Query Language). This is the primary method for finding issues.",
+        "parameters": [
+          {
+            "name": "jql",
+            "in": "query",
+            "description": "The JQL query string",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nextPageToken",
+            "in": "query",
+            "description": "Cursor token for paginating through results. Use the nextPageToken from a previous response to get the next page.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "A comma-separated list of fields to return for each issue",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Use expand to include additional information about issues in the response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/issue/{issueIdOrKey}": {
+      "get": {
+        "operationId": "getIssue",
+        "summary": "Get issue",
+        "description": "Returns the details of an issue",
+        "parameters": [
+          {
+            "name": "issueIdOrKey",
+            "in": "path",
+            "description": "The ID or key of the issue",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "A comma-separated list of fields to return for the issue",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Use expand to include additional information about the issue in the response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/issue/{issueIdOrKey}/comment": {
+      "get": {
+        "operationId": "getComments",
+        "summary": "Get comments",
+        "description": "Returns all comments for an issue",
+        "parameters": [
+          {
+            "name": "issueIdOrKey",
+            "in": "path",
+            "description": "The ID or key of the issue",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The index of the first item to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "Order the results by a field",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["created", "-created", "+created"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/issue/{issueIdOrKey}/transitions": {
+      "get": {
+        "operationId": "getTransitions",
+        "summary": "Get transitions",
+        "description": "Returns either all transitions or a transition that can be performed by the user on an issue",
+        "parameters": [
+          {
+            "name": "issueIdOrKey",
+            "in": "path",
+            "description": "The ID or key of the issue",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Use expand to include additional information about transitions in the response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/project": {
+      "get": {
+        "operationId": "listProjects",
+        "summary": "Get all projects",
+        "description": "Returns all projects visible to the user",
+        "parameters": [
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The index of the first item to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Use expand to include additional information in the response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/project/search": {
+      "get": {
+        "operationId": "searchProjects",
+        "summary": "Search projects",
+        "description": "Returns projects visible to the user that match the search query",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "The search query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The index of the first item to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Use expand to include additional information in the response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/project/{projectIdOrKey}": {
+      "get": {
+        "operationId": "getProject",
+        "summary": "Get project",
+        "description": "Returns the project details for a project",
+        "parameters": [
+          {
+            "name": "projectIdOrKey",
+            "in": "path",
+            "description": "The project ID or project key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Use expand to include additional information in the response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/priority": {
+      "get": {
+        "operationId": "getPriorities",
+        "summary": "Get priorities",
+        "description": "Returns the list of all issue priorities",
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/issuetype/project": {
+      "get": {
+        "operationId": "getIssueTypesForProject",
+        "summary": "Get issue types for project",
+        "description": "Returns issue types for a project",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "description": "The ID of the project",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/statuses/search": {
+      "get": {
+        "operationId": "searchStatuses",
+        "summary": "Search statuses",
+        "description": "Returns a list of statuses that match a search on name or project",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "description": "The project the status is part of or null for global statuses",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The index of the first item to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/label": {
+      "get": {
+        "operationId": "getAllLabels",
+        "summary": "Get all labels",
+        "description": "Returns a paginated list of labels",
+        "parameters": [
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The index of the first item to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/attachment/content/{id}": {
+      "get": {
+        "operationId": "getAttachmentContent",
+        "summary": "Get attachment content",
+        "description": "Returns the contents of an attachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the attachment",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/api/3/user/search": {
+      "get": {
+        "operationId": "getAllUsers",
+        "summary": "Find users",
+        "description": "Returns a list of users that match the search string",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "A query string used to search username, name or email address",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The index of the first item to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/agile/1.0/board/{boardId}": {
+      "get": {
+        "operationId": "getBoard",
+        "summary": "Get board",
+        "description": "Returns the board for the given board ID",
+        "parameters": [
+          {
+            "name": "boardId",
+            "in": "path",
+            "description": "The ID of the requested board",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/agile/1.0/board/{boardId}/sprint": {
+      "get": {
+        "operationId": "getAllSprints",
+        "summary": "Get all sprints",
+        "description": "Returns all sprints from a board",
+        "parameters": [
+          {
+            "name": "boardId",
+            "in": "path",
+            "description": "The ID of the board that contains the sprints",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "description": "The starting index of the returned sprints",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "The maximum number of sprints to return per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filters results to sprints in the specified states",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["active", "future", "closed"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/rest/agile/1.0/sprint/{sprintId}": {
+      "get": {
+        "operationId": "getSprint",
+        "summary": "Get sprint",
+        "description": "Returns the sprint for a given sprint ID",
+        "parameters": [
+          {
+            "name": "sprintId",
+            "in": "path",
+            "description": "The ID of the requested sprint",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,10 +2,11 @@
 module "gateway" {
   source = "./gateway"
 
-  gateway_name = local.gateway_name
-  runtime_name = local.runtime_name
-  environment  = var.environment
-  secret_name  = var.secret_name
+  gateway_name        = local.gateway_name
+  runtime_name        = local.runtime_name
+  environment         = var.environment
+  secret_name         = var.secret_name
+  schemas_bucket_name = local.schemas_bucket_name
 }
 
 # Lambda receiver, receives inbound webhook, triggers invoker asynchronously
@@ -20,6 +21,8 @@ module "receiver" {
   bot_name           = var.bot_name
   account_short_code = var.account_short_code
   region_short_code  = var.region_short_code
+  slack_bot_id       = var.slack_bot_id
+  slack_bot_user_id  = var.slack_bot_user_id
 }
 
 # Invoker lambda, invokes AgentCore worker synchronously
@@ -67,4 +70,24 @@ module "worker" {
   memory_id        = aws_bedrockagentcore_memory.vera_memory.id
   memory_region    = var.memory_region
   session_ttl_days = var.session_ttl_days
+
+  # Per-user OAuth configuration
+  oauth_table_name  = aws_dynamodb_table.oauth_tokens.name
+  oauth_table_arn   = aws_dynamodb_table.oauth_tokens.arn
+  oauth_kms_key_id  = aws_kms_key.oauth_tokens.key_id
+  oauth_kms_key_arn = aws_kms_key.oauth_tokens.arn
+  auth_portal_url   = module.auth_portal.function_url
+}
+
+# Auth Portal for per-user OAuth authorization
+module "auth_portal" {
+  source = "./auth_portal"
+
+  naming_prefix     = local.naming_prefix
+  environment       = var.environment
+  oauth_table_name  = aws_dynamodb_table.oauth_tokens.name
+  oauth_table_arn   = aws_dynamodb_table.oauth_tokens.arn
+  oauth_kms_key_id  = aws_kms_key.oauth_tokens.key_id
+  oauth_kms_key_arn = aws_kms_key.oauth_tokens.arn
+  secret_name       = var.secret_name
 }

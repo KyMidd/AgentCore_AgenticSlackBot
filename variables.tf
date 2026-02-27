@@ -107,3 +107,16 @@ variable "memory_region" {
   type        = string
   default     = "us-east-1"
 }
+
+# Slack Bot Identity (for receiver Lambda bot-message detection)
+variable "slack_bot_id" {
+  description = "Slack Bot ID (from auth.test) used by receiver to detect own messages"
+  type        = string
+  default     = ""
+}
+
+variable "slack_bot_user_id" {
+  description = "Slack Bot User ID used by receiver to detect own messages (catches file_share events)"
+  type        = string
+  default     = ""
+}

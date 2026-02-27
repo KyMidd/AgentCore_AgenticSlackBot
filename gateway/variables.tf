@@ -20,3 +20,8 @@ variable "secret_name" {
   description = "Name of the Secrets Manager secret containing MCP credentials"
   type        = string
 }
+
+variable "schemas_bucket_name" {
+  description = "Name of the S3 bucket for custom gateway OpenAPI schemas"
+  type        = string
+}

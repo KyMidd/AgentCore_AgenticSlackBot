@@ -95,6 +95,11 @@ resource "aws_bedrockagentcore_agent_runtime" "veraslack" {
     MEMORY_TYPE      = "SESSION_SUMMARY"
     MEMORY_REGION    = var.memory_region
     SESSION_TTL_DAYS = var.session_ttl_days
+
+    # Per-user OAuth configuration
+    OAUTH_TABLE_NAME = var.oauth_table_name
+    OAUTH_KMS_KEY_ID = var.oauth_kms_key_id
+    AUTH_PORTAL_URL  = var.auth_portal_url
   }
 
   tags = {

@@ -1,0 +1,403 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Confluence Cloud REST API",
+    "description": "Confluence Cloud REST API schema for AgentCore Gateway using direct domain with Basic auth",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://YOUR_INSTANCE.atlassian.net"
+    }
+  ],
+  "paths": {
+    "/wiki/api/v2/pages/{id}": {
+      "get": {
+        "operationId": "getPageById",
+        "summary": "Get page by ID",
+        "description": "Returns a specific page by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the page to be returned",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "body-format",
+            "in": "query",
+            "description": "The content format type to be returned in the body field",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["storage", "atlas_doc_format", "view"],
+              "default": "storage"
+            }
+          },
+          {
+            "name": "include-labels",
+            "in": "query",
+            "description": "Include labels in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "include-properties",
+            "in": "query",
+            "description": "Include content properties in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "include-operations",
+            "in": "query",
+            "description": "Include operations in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "include-versions",
+            "in": "query",
+            "description": "Include version information in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/wiki/api/v2/pages": {
+      "get": {
+        "operationId": "getPages",
+        "summary": "Get pages",
+        "description": "Returns all pages in the instance",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter the results based on page IDs",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "name": "space-id",
+            "in": "query",
+            "description": "Filter the results based on space IDs",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "Filter the results by page title",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter the results by page status",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["current", "archived", "draft", "trashed"]
+              }
+            }
+          },
+          {
+            "name": "body-format",
+            "in": "query",
+            "description": "The content format type to be returned in the body field",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["storage", "atlas_doc_format", "view"],
+              "default": "storage"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of pages per result to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "maximum": 250
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/wiki/api/v2/spaces": {
+      "get": {
+        "operationId": "getSpaces",
+        "summary": "Get spaces",
+        "description": "Returns all spaces in the instance",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "Filter the results based on space IDs",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "name": "keys",
+            "in": "query",
+            "description": "Filter the results based on space keys",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter the results based on space type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["global", "personal"]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter the results based on space status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["current", "archived"]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of spaces per result to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "maximum": 250
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/wiki/rest/api/content/search": {
+      "get": {
+        "operationId": "searchByCQL",
+        "summary": "Search content by CQL",
+        "description": "Returns the list of content that matches the Confluence Query Language (CQL) query",
+        "parameters": [
+          {
+            "name": "cql",
+            "in": "query",
+            "description": "A CQL query string to use to locate content",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cqlcontext",
+            "in": "query",
+            "description": "The space, content, and content status to execute the search against",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "A comma-separated list of properties to expand on the content",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "The starting index of the returned content",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of content objects to return per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    },
+    "/wiki/rest/api/search": {
+      "get": {
+        "operationId": "searchContent",
+        "summary": "Search content",
+        "description": "Searches for content using the Confluence Query Language (CQL)",
+        "parameters": [
+          {
+            "name": "cql",
+            "in": "query",
+            "description": "The CQL query to be used for the search",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cqlcontext",
+            "in": "query",
+            "description": "The space, content, and content status to execute the search against",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeArchivedSpaces",
+            "in": "query",
+            "description": "Whether to include content from archived spaces in the results",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "excerpt",
+            "in": "query",
+            "description": "The excerpt strategy to use. Can be 'indexed', 'highlight', 'none'",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["indexed", "highlight", "none"],
+              "default": "highlight"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "A comma-separated list of properties to expand on the content",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "The starting index of the returned content",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of items to return per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned if the request is successful"
+          }
+        }
+      }
+    }
+  }
+}

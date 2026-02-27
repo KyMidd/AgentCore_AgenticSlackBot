@@ -249,3 +249,45 @@ resource "aws_iam_role_policy" "veraslack_memory_access" {
     ]
   })
 }
+
+# IAM Policy for Runtime - DynamoDB OAuth Token Access
+resource "aws_iam_role_policy" "veraslack_oauth_dynamodb" {
+  name = "OAuthDynamoDBAccess"
+  role = aws_iam_role.veraslack_runtime.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = var.oauth_table_arn
+      }
+    ]
+  })
+}
+
+# IAM Policy for Runtime - KMS OAuth Token Encryption
+resource "aws_iam_role_policy" "veraslack_oauth_kms" {
+  name = "OAuthKMSAccess"
+  role = aws_iam_role.veraslack_runtime.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt"
+        ]
+        Resource = var.oauth_kms_key_arn
+      }
+    ]
+  })
+}

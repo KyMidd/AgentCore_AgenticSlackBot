@@ -67,16 +67,14 @@ def build_gateway_mcp_client(secrets_json, mode="read_only"):
 
     # Import all provider tool filters
     from worker_gateway_tools_pagerduty import pagerduty_tool_filter
-
-    # Future providers will be added here:
-    # from worker_gateway_tools_github import github_tool_filter
-    # from worker_gateway_tools_slack import slack_tool_filter
+    from worker_gateway_tools_jira import jira_tool_filter
+    from worker_gateway_tools_confluence import confluence_tool_filter
 
     # Combine all provider filters based on mode
     tool_filters = combine_tool_filters(
         pagerduty_tool_filter(mode),
-        # github_tool_filter(mode),  # Future
-        # slack_tool_filter(mode),   # Future
+        jira_tool_filter(mode),
+        confluence_tool_filter(mode),
     )
 
     # Get gateway URL
