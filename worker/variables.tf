@@ -120,3 +120,34 @@ variable "memory_region" {
   description = "AWS region for AgentCore Memory"
   type        = string
 }
+
+# Per-user OAuth configuration
+variable "oauth_table_name" {
+  description = "DynamoDB table name for OAuth tokens"
+  type        = string
+  default     = ""
+}
+
+variable "oauth_table_arn" {
+  description = "DynamoDB table ARN for OAuth tokens"
+  type        = string
+  default     = ""
+}
+
+variable "oauth_kms_key_id" {
+  description = "KMS key ID for OAuth token encryption"
+  type        = string
+  default     = ""
+}
+
+variable "oauth_kms_key_arn" {
+  description = "KMS key ARN for OAuth token encryption"
+  type        = string
+  default     = ""
+}
+
+variable "auth_portal_url" {
+  description = "Auth portal Lambda function URL"
+  type        = string
+  default     = ""
+}

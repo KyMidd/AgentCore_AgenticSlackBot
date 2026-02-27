@@ -68,8 +68,10 @@ resource "aws_iam_role_policy" "gateway_s3" {
       Effect = "Allow"
       Action = ["s3:GetObject", "s3:ListBucket"]
       Resource = [
-        "arn:aws:s3:::${var.runtime_name}-mcp-schemas",
-        "arn:aws:s3:::${var.runtime_name}-mcp-schemas/*"
+        aws_s3_bucket.custom_schemas.arn,
+        "${aws_s3_bucket.custom_schemas.arn}/*",
+        "arn:aws:s3:::amazonbedrockagentcore-built-sampleschemas*",
+        "arn:aws:s3:::amazonbedrockagentcore-built-sampleschemas*/*"
       ]
     }]
   })

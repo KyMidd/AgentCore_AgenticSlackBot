@@ -124,3 +124,13 @@ def get_gateway_token(secrets_json):
         print(f"🟡 Using cached token (expires in {time_until_expiry} seconds)")
 
     return _token_cache["token"]
+
+
+def clear_token_cache():
+    """
+    Clear the token cache.
+    Useful for testing or forcing token refresh.
+    """
+    print("🟡 Clearing token cache")
+    _token_cache["token"] = None
+    _token_cache["expires_at"] = 0

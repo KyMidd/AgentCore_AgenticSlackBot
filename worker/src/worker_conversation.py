@@ -1,7 +1,12 @@
 # Conversation handling functions
 import os
+import random
 import requests
-from worker_slack import update_slack_response, delete_slack_response
+from worker_slack import (
+    update_slack_response,
+    delete_slack_response,
+    upload_file_to_thread,
+)
 from worker_agent import execute_agent
 from worker_aws import ai_request
 from worker_inputs import (
@@ -388,6 +393,7 @@ def handle_message_event(
         initial_model_user_status_message,
         initial_model_system_prompt,
         initial_message,
+        slack_loading_responses,
     )
 
     # Initialize message_ts as None
@@ -535,6 +541,10 @@ def handle_message_event(
         if debug_enabled == "True":
             print(f"🟡 State of conversation after context request: {conversation}")
 
+    # Build loading message with randomized header
+    loading_header = random.choice(slack_loading_responses)
+    loading_message = f"{loading_header}\n{initial_message}"
+
     # Update Slack with initial message
     message_ts = update_slack_response(
         say,
@@ -542,7 +552,7 @@ def handle_message_event(
         message_ts,
         channel_id,
         thread_ts,
-        initial_message,
+        loading_message,
     )
 
     # Build conversation in bedrock format
@@ -554,7 +564,7 @@ def handle_message_event(
     # Get user name for actor_id from already-fetched user info
     # I'd like to use the name ahead of the @ in an email address, but slack apps can't fetch user emails
     # So we guess, taking real name normalized, lowercase it, replace spaces with underscores
-    # Good enough for now, but it'll have trouble with folks with multiple names. It'll still work, but won't match VeraTeams memories because of name mismatches
+    # Good enough for now, but it'll have trouble with folks with multiple names. It'll still work, but won't match memories because of name mismatches
     # Example: "Kyler Middleton" becomes "kyler_middleton"
 
     # Fetch the user's Slack ID (e.g., U12345678) to use as fallback
@@ -584,11 +594,29 @@ def handle_message_event(
     print(f"🟡 Memory enabled for session: {session_id}, actor: {actor_id}")
 
     try:
+        # Extract slack_user_id for per-user OAuth
+        slack_user_id = body["event"].get("user")
+
         # Execute bedrock agent to fetch response
-        response = execute_agent(
+        # Get user display name for auth portal
+        user_profile = user_info_json.get("user", {}).get("profile", {})
+        user_display_name = (
+            user_profile.get("email")
+            or user_profile.get("display_name")
+            or user_info_json.get("user", {}).get("real_name")
+        )
+
+        response, attachments, additional_messages = execute_agent(
             secrets_json,
             conversation,
             memory_config,
+            slack_user_id=slack_user_id,
+            user_display_name=user_display_name,
+            slack_context={
+                "token": token,
+                "channel_id": channel_id,
+                "thread_ts": thread_ts,
+            },
         )
     except Exception as e:
         import traceback
@@ -596,14 +624,50 @@ def handle_message_event(
         traceback.print_exc()
         print(f"🔴 Error executing agent: {str(e)}")
         response = f"😔 Error processing request: {str(e)}"
+        attachments = []
+        additional_messages = []
 
     # Delete the initial "researching" message
     delete_slack_response(client, channel_id, message_ts)
 
-    # Update Slack with final response
-    message_ts = update_slack_response(
-        say, client, None, channel_id, thread_ts, response
-    )
+    # Post response — if attachments exist, attach the first file to the response message
+    if attachments:
+        # First attachment is sent with the response text as initial_comment
+        first = attachments[0]
+        success = upload_file_to_thread(
+            client,
+            channel_id,
+            thread_ts,
+            first["filename"],
+            first["content"],
+            first.get("title"),
+            initial_comment=response,
+        )
+        # Fallback: if file upload failed, post text response normally so user always gets it
+        if not success:
+            print("🟡 File upload failed, falling back to text-only response")
+            update_slack_response(say, client, None, channel_id, thread_ts, response)
+        # Additional attachments are uploaded separately to the same thread
+        for attachment in attachments[1:]:
+            upload_file_to_thread(
+                client,
+                channel_id,
+                thread_ts,
+                attachment["filename"],
+                attachment["content"],
+                attachment.get("title"),
+            )
+    else:
+        # No attachments — post text response normally
+        message_ts = update_slack_response(
+            say, client, None, channel_id, thread_ts, response
+        )
+
+    # Post any additional messages to the thread
+    for extra_msg in additional_messages:
+        update_slack_response(
+            say, client, None, channel_id, thread_ts, extra_msg["text"]
+        )
 
     # Write audit log
     if audit_logging_enabled:

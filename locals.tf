@@ -12,6 +12,7 @@ locals {
 
   # Runtime name
   runtime_name        = local.naming_prefix
-  ecr_repository_name = "${lower(var.region_short_code)}${lower(var.account_short_code)}-veraslack" # e.g., ue1ti-veraslack
+  ecr_repository_name = "${lower(var.region_short_code)}${lower(var.account_short_code)}-veraslack"            # e.g., ue1ti-veraslack
+  schemas_bucket_name = "${lower(var.region_short_code)}${lower(var.account_short_code)}-vera-gateway-schemas" # e.g., ue1ti-vera-gateway-schemas
 
 }

@@ -1,5 +1,6 @@
-# Agent execution functions
+# Agent execution and lifecycle management
 import os
+from botocore.config import Config as BotocoreConfig
 from mcp.client.streamable_http import streamablehttp_client
 from strands import Agent
 from strands.tools.mcp.mcp_client import MCPClient
@@ -15,9 +16,22 @@ from worker_inputs import (
     memory_region,
 )
 from worker_errors import get_error_message
+from worker_attachment_tool import (
+    build_attachment_tool,
+    build_additional_message_tool,
+    build_chart_tool,
+)
+from worker_sub_agent_tool import build_sub_agent_tool
 
 
-def execute_agent(secrets_json, conversation, memory_config=None):
+def execute_agent(
+    secrets_json,
+    conversation,
+    memory_config=None,
+    slack_user_id=None,
+    user_display_name=None,
+    slack_context=None,
+):
     """
     Execute agent with MCP clients and optional memory
 
@@ -26,9 +40,12 @@ def execute_agent(secrets_json, conversation, memory_config=None):
         conversation: Conversation history for agent
         memory_config: Optional dict with memory configuration:
                       {"session_id": str, "actor_id": str, "memory_id": str, "memory_type": str}
+        slack_user_id: Optional Slack user ID for per-user OAuth
+        slack_context: Optional dict with Slack context for ephemeral messaging:
+                      {"token": str, "channel_id": str, "thread_ts": str}
 
     Returns:
-        Agent response text
+        Tuple of (response_text, attachments_list, additional_messages_list)
     """
 
     ###
@@ -39,6 +56,9 @@ def execute_agent(secrets_json, conversation, memory_config=None):
     tools = []
     opened_clients = {}
 
+    # Initialize shared state for response enhancement tools
+    attachments_list = []
+    additional_messages_list = []
     # Built-in tools
     from strands_tools import calculator, current_time, retrieve
 
@@ -46,7 +66,7 @@ def execute_agent(secrets_json, conversation, memory_config=None):
 
     ##
     # AgentCore Gateway MCP
-    # Provides access to all gateway-registered providers (PagerDuty, etc.)
+    # Provides access to all gateway-registered providers (PagerDuty, Jira, Confluence)
     ##
 
     try:
@@ -76,22 +96,85 @@ def execute_agent(secrets_json, conversation, memory_config=None):
         print(f"🔴 Error setting up GitHub MCP client: {str(error)}")
 
     ##
-    # Atlassian MCP
+    # Per-User Atlassian OAuth (write operations)
     ##
 
-    try:
-        from worker_mcp_client_atlassian import build_atlassian_mcp_client
+    has_atlassian_write_tools = False
 
-        # Build Atlassian MCP client with only read-only tools
-        atlassian_mcp_client = build_atlassian_mcp_client(
-            secrets_json["ATLASSIAN_REFRESH_TOKEN"],
-            secrets_json["ATLASSIAN_CLIENT_ID"],
-            "read_only",
-        )
-        opened_clients["Atlassian"] = atlassian_mcp_client
-        tools.append(atlassian_mcp_client)
-    except Exception as error:
-        print(f"🔴 Error setting up Atlassian MCP client: {str(error)}")
+    if slack_user_id:
+        try:
+            from worker_oauth import lookup_user_token, check_and_cleanup_auth_prompt
+
+            # Check if user completed auth since last interaction
+            auth_completed = check_and_cleanup_auth_prompt(slack_user_id)
+            if auth_completed:
+                print(
+                    f"🟢 User {slack_user_id} completed Atlassian auth since last interaction"
+                )
+
+            # Look up user's Atlassian token
+            user_refresh_token = lookup_user_token(slack_user_id, "atlassian")
+
+            if user_refresh_token:
+                try:
+                    from worker_atlassian_rest_tools import build_atlassian_rest_tools
+
+                    atlassian_rest_tools = build_atlassian_rest_tools(
+                        user_refresh_token,
+                        secrets_json["ATLASSIAN_OAUTH_CLIENT_ID"],
+                        secrets_json["ATLASSIAN_OAUTH_CLIENT_SECRET"],
+                        slack_user_id=slack_user_id,
+                    )
+                    tools.extend(atlassian_rest_tools)
+                    has_atlassian_write_tools = True
+                    print(
+                        f"🟢 Atlassian REST write tools registered for {slack_user_id} ({len(atlassian_rest_tools)} tools)"
+                    )
+                except Exception as error:
+                    print(f"🔴 Error setting up Atlassian REST tools: {str(error)}")
+                    # Only delete token if it's an auth/token failure, not a transient error
+                    error_msg = str(error).lower()
+                    if "token" in error_msg or "401" in error_msg or "403" in error_msg:
+                        try:
+                            from worker_oauth import delete_user_token
+
+                            delete_user_token(slack_user_id, "atlassian")
+                            print(
+                                f"🟡 Deleted stale Atlassian token for {slack_user_id}"
+                            )
+                        except Exception as del_error:
+                            print(f"🔴 Error deleting stale token: {del_error}")
+            else:
+                print(
+                    f"🟡 No Atlassian user token for {slack_user_id}, registering auth tool"
+                )
+        except Exception as error:
+            print(f"🔴 Error in per-user OAuth setup: {str(error)}")
+
+        # Only register the auth tool when write tools are NOT available.
+        # This prevents the model from choosing the auth tool over actual write tools.
+        if not has_atlassian_write_tools:
+            try:
+                from worker_atlassian_auth_tool import build_atlassian_auth_tool
+
+                auth_tool = build_atlassian_auth_tool(
+                    slack_user_id,
+                    secrets_json,
+                    user_display_name=user_display_name,
+                    slack_token=slack_context.get("token") if slack_context else None,
+                    channel_id=(
+                        slack_context.get("channel_id") if slack_context else None
+                    ),
+                    thread_ts=(
+                        slack_context.get("thread_ts") if slack_context else None
+                    ),
+                )
+                tools.append(auth_tool)
+                print("🟢 Atlassian auth tool registered (no write tools available)")
+            except Exception as error:
+                print(f"🔴 Error registering Atlassian auth tool: {str(error)}")
+        else:
+            print("🟡 Skipping auth tool registration — write tools already available")
 
     ##
     # Azure MCP
@@ -125,7 +208,7 @@ def execute_agent(secrets_json, conversation, memory_config=None):
         if azure_mcp_client is not None and azure_mcp_context is not None:
             try:
                 azure_mcp_client.__exit__(None, None, None)
-            except:
+            except Exception:
                 pass
         azure_mcp_client = None
         azure_mcp_context = None
@@ -148,6 +231,22 @@ def execute_agent(secrets_json, conversation, memory_config=None):
         print(f"🔴 Error setting up AWS CLI MCP client: {str(error)}")
 
     ##
+    # Atlan MCP
+    ##
+
+    try:
+        from worker_mcp_client_atlan import build_atlan_mcp_client
+
+        # Build Atlan MCP client with only read-only tools
+        atlan_mcp_client = build_atlan_mcp_client(
+            secrets_json["ATLAN_API_KEY"], "read_only"
+        )
+        opened_clients["Atlan"] = atlan_mcp_client
+        tools.append(atlan_mcp_client)
+    except Exception as error:
+        print(f"🔴 Error setting up Atlan MCP client: {str(error)}")
+
+    ##
     # Splunk MCP
     ##
 
@@ -163,6 +262,30 @@ def execute_agent(secrets_json, conversation, memory_config=None):
     except Exception as error:
         print(f"🔴 Error setting up Splunk MCP client: {str(error)}")
 
+    ##
+    # File Attachment Tool
+    ##
+
+    # Build response enhancement tools with closure-based state sharing
+    attachment_tool = build_attachment_tool(attachments_list)
+    tools.append(attachment_tool)
+    additional_message_tool = build_additional_message_tool(additional_messages_list)
+    tools.append(additional_message_tool)
+    chart_tool = build_chart_tool(attachments_list)
+    tools.append(chart_tool)
+
+    # Sub-agent tool (delegates tasks to child agents with fresh context windows)
+    try:
+        sub_agent_tool = build_sub_agent_tool(secrets_json)
+        tools.append(sub_agent_tool)
+        print("🟢 Sub-agent tool added")
+    except Exception as error:
+        print(f"🔴 Error registering sub-agent tool: {str(error)}")
+
+    print(
+        "🟢 Response enhancement tools added (file attachment, additional messages, chart generation, sub-agent)"
+    )
+
     ###
     # Build agent
     ###
@@ -174,6 +297,10 @@ def execute_agent(secrets_json, conversation, memory_config=None):
             guardrail_id=guardrailIdentifier,
             guardrail_trace=guardrailTracing,
             guardrail_version=guardrailVersion,
+            boto_client_config=BotocoreConfig(
+                read_timeout=600,
+                retries={"max_attempts": 3, "mode": "adaptive"},
+            ),
         ),
         "system_prompt": system_prompt,
         "tools": tools,
@@ -242,12 +369,35 @@ def execute_agent(secrets_json, conversation, memory_config=None):
     try:
         response = agent(conversation)
         # Extract text from AgentResult object
-        return str(response)
+        return str(response), attachments_list, additional_messages_list
     except Exception as error:
         import traceback
 
-        print(f"🔴 Error executing agent: {traceback.format_exc()}")
-        return get_error_message(error)
+        tb_str = traceback.format_exc()
+        print(f"🔴 Error executing agent: {tb_str}")
+
+        # If memory session manager caused the crash, retry without it
+        if "session_manager" in agent_kwargs and (
+            "session_manager" in tb_str
+            or "SessionMessage" in tb_str
+            or "append_message" in tb_str
+            or "bedrock_agentcore.memory" in tb_str
+        ):
+            print("🟡 Memory-related crash detected, retrying without memory...")
+            try:
+                retry_kwargs = {
+                    k: v for k, v in agent_kwargs.items() if k != "session_manager"
+                }
+                agent_no_memory = Agent(**retry_kwargs)
+                print("🟢 Agent recreated without memory session manager")
+                response = agent_no_memory(conversation)
+                return str(response), attachments_list, additional_messages_list
+            except Exception as retry_error:
+                retry_tb = traceback.format_exc()
+                print(f"🔴 Retry without memory also failed: {retry_tb}")
+                return get_error_message(retry_error), [], []
+
+        return get_error_message(error), [], []
     finally:
         # Manually exit Azure MCP context to avoid leaving open memory leak
         if azure_mcp_client is not None and azure_mcp_context is not None:

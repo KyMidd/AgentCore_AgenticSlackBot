@@ -141,3 +141,92 @@ def ai_request(
             thread_ts,
             error_message,
         )
+
+
+def enrich_guardrail_block(response, full_event_payload):
+    from worker_inputs import guardrailIdentifier
+    import os
+
+    if debug_enabled == "True":
+        print(f"🟡 Full event payload: {full_event_payload}")
+
+    # Check if the trace.guardrail.inputAssessment.4raioni9cwpe.contentPolicy.filters[0] path exists
+    for event in full_event_payload:
+        try:
+            # If we're blocked by conent policy, this will be present
+            try:
+                # Try input assessment
+                guardrail_trace = event["metadata"]["trace"]["guardrail"][
+                    "inputAssessment"
+                ][guardrailIdentifier]["contentPolicy"]["filters"][0]
+            except:
+                # Try output assessment
+                guardrail_trace = event["metadata"]["trace"]["guardrail"][
+                    "outputAssessment"
+                ][guardrailIdentifier]["contentPolicy"]["filters"][0]
+
+            # Set vars to values
+            guardrail_type = guardrail_trace.get("type")
+            guardrail_confidence = guardrail_trace.get("confidence")
+            guardrail_filter_strength = guardrail_trace.get("filterStrength")
+
+            # Enrich blocked message with guardrail trace info
+            response = (
+                f"🛑 *Our security guardrail blocked this conversation*\n"
+                f"> {response}\n\n"
+                f"• *Guardrail blocked type:* {guardrail_type}\n"
+                f"• *Strength our guardrail config is set to:* {guardrail_filter_strength}\n"
+                f"• *Confidence this conversation breaks the rules:* {guardrail_confidence}\n\n"
+                f"*You can try rephrasing your question, or open a ticket with the Internal AI Team to investigate*\n"
+                f"*For further assistance, visit <#C0XXXXXXXXX>*"
+            )
+
+            # Return response
+            return response
+
+        # If didn't find in this event, continue
+        except:
+            # If the request fails, log the error
+            print(
+                f"🟡 Didn't find guardrail content policy block in this event: {event}"
+            )
+
+        # Check the event to see if we're blocked by topic policy
+        try:
+            try:
+                # Try input assessment
+                guardrail_trace = event["metadata"]["trace"]["guardrail"][
+                    "inputAssessment"
+                ][guardrailIdentifier]["topicPolicy"]["topics"][0]
+            except:
+                # Try output assessment
+                guardrail_trace = event["metadata"]["trace"]["guardrail"][
+                    "outputAssessments"
+                ][guardrailIdentifier][0]["topicPolicy"]["topics"][0]
+
+            # Extract individual values
+            guardrail_name = guardrail_trace["name"]  # 'healthcare_topic'
+
+            # Enrich the response
+            response = (
+                f"🛑 *Our security guardrail blocked this conversation based on the topic*\n"
+                f"> {response}\n"
+                f"• *Guardrail block name:* {guardrail_name}\n"
+                f"*You can try rephrasing your question, or open a ticket with DevOps to investigate*"
+            )
+
+            # return response
+            return response
+
+        # If didn't find in this event, continue
+        except:
+            # If the request fails, print the error
+            print(f"🟡 Didn't find guardrail topic block in this event: {event}")
+
+    # Not configured to enrich the response with guardrail trace information, just send back response
+    response = (
+        f"🛑 *Our security guardrail blocked this conversation*\n\n"
+        f"> {response}\n\n"
+        f"*You can try rephrasing your question, or open a ticket with DevOps to investigate*"
+    )
+    return response

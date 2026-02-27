@@ -6,11 +6,15 @@ bedrock-agentcore==1.2.0
 
 # MCP and Strands dependencies
 mcp>=0.9.0
-strands-agents==1.23.0
-strands-agents-tools==0.2.14
+strands-agents==1.26.0
+strands-agents-tools==0.2.21
 
 # AWS OpenTelemetry Distro - REQUIRED for AgentCore observability
 aws-opentelemetry-distro>=0.10.0
+
+# Chart generation
+matplotlib==3.10.8
+numpy==2.4.2
 
 # Additional dependencies
 pydantic
