@@ -17,6 +17,11 @@ A GenAI Slack bot powered by AWS Bedrock AgentCore and Anthropic's Claude. The b
 
 ## Architecture Overview
 
+![Architecture Diagram](images/architecture.png)
+
+<details>
+<summary>Text-based diagram (click to expand)</summary>
+
 ```mermaid
 graph TB
     subgraph "Slack"
@@ -89,6 +94,8 @@ graph TB
     E -->|Response| A
     E -->|Upload| A2
 ```
+
+</details>
 
 ### Components
 
