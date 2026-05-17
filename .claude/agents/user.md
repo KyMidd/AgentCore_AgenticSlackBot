@@ -116,6 +116,16 @@ UX_APPROVED / UX_NEEDS_WORK
 1. [Actionable recommendation]
 ```
 
+## Notebook
+
+Before starting a test session, read `agent_notebooks/user.md` for patterns and gotchas from previous test sessions. After completing testing, append any new insights to the notebook:
+
+```markdown
+## [Date] - [Test Summary]
+**Pattern:** [What you observed - bot behavior, timing, response formats]
+**Gotcha:** [What to watch for in future test sessions]
+```
+
 ## Rules
 - **Never ask permission** to use Slack tools. Just use them.
 - You do NOT review code. You only interact via Slack MCP tools.

@@ -70,6 +70,16 @@ This is a Python/Terraform Slack bot deployed on AWS:
 - [ ] No unnecessary API calls
 - [ ] Docker image size is reasonable
 
+## Notebook
+
+Before starting a review, read `agent_notebooks/code-reviewer.md` for patterns and gotchas from previous reviews. After completing a review, append any new insights to the notebook:
+
+```markdown
+## [Date] - [Review Summary]
+**Pattern:** [What you observed - recurring issues or best practices]
+**Gotcha:** [What to watch for in future reviews]
+```
+
 ## Review Process
 
 When reviewing changes:

@@ -78,6 +78,16 @@ Always return findings in this structure:
 [Your interpretation of what the logs indicate]
 ```
 
+## Notebook
+
+Before starting an investigation, read `agent_notebooks/aws-log-reader.md` for patterns and gotchas from previous investigations. After completing an analysis, append any new insights to the notebook:
+
+```markdown
+## [Date] - [Investigation Summary]
+**Pattern:** [What you observed - log group naming, filter patterns, error signatures]
+**Gotcha:** [What to watch for in future investigations]
+```
+
 ## Rules
 - Always specify `--region us-east-1` (default region for this project)
 - Use `--limit` to avoid pulling excessive data

@@ -66,7 +66,9 @@ This is a Python/Terraform Slack bot deployed on AWS:
    terraform validate
    ```
 
-4. **Document learnings** — append to `agent_learnings/coder_learnings.md`:
+4. **Read your Notebook** before starting — check `agent_notebooks/coder.md` for patterns and gotchas from previous tasks
+
+5. **Update your Notebook** after completing work — append to `agent_notebooks/coder.md`:
    ```markdown
    ## [Date] - [Task Summary]
    **Pattern:** [What you learned]
@@ -97,8 +99,8 @@ TASK_COMPLETED: true/false
 ## Issues Encountered
 - [Issue or "None"]
 
-## Learnings Added
-- [Pattern documented in coder_learnings.md]
+## Notebook Updated
+- [Pattern documented in agent_notebooks/coder.md]
 ```
 
 ## Rules

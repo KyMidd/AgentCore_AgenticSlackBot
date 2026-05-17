@@ -25,6 +25,16 @@ This is a Python/Terraform Slack bot deployed on AWS:
 ## Repository
 - **Workspace:** Repository root (use `git rev-parse --show-toplevel` to resolve)
 
+## Notebook
+
+Before starting a review, read `agent_notebooks/reviewer.md` for patterns and gotchas from previous reviews. After completing a review, append any new insights to the notebook:
+
+```markdown
+## [Date] - [Review Summary]
+**Pattern:** [What you observed - recurring gaps or validation insights]
+**Gotcha:** [What to watch for in future reviews]
+```
+
 ## Review Process
 
 ### 1. Analyze the Codebase
