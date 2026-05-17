@@ -10,14 +10,13 @@ receiver/*.zip
 invoker/*.zip
 worker/*.zip
 gateway/*.zip
-.claude/**
 
 # Terraform
 worker/.terraform/*
 tfplan
 
 # Claude
-**/.claude/
+.claude/settings.local.json
 
 # Deploy file
 worker/ue1tiprd_build_and_push.sh
